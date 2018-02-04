@@ -1,0 +1,381 @@
+UML legend:
+
+table = class
+#pkey
++index
+#id = id SERIAL, PRIMARY KEY (id),
+
+SERIAL is an alias for BIGINT UNSIGNED NOT NULL AUTO_INCREMENT UNIQUE.
+
+@startuml
+
+package "Configurations" {
+	class Banks #cyan {
+	    banks for national
+	    ==
+	    #id
+	    --
+	    +nation : varchar(32)
+	    code : varchar(64)
+	    name : varchar(64)
+	    length : tinyint(4)
+	    summary : varchar(128)
+	}
+
+	class Companies #cyan {
+	    Companies info
+	    ==
+	    #id
+	    --
+	    name : varchar(128)
+	    address : varchar(128)
+	    email : varchar(128)
+	    phone : varchar(128)
+	}
+}
+
+class Products #cyan {
+	Loan Products
+	==
+	#id
+	--
+	+name : varchar(128) -- name of product
+	amount : decimal(19,4) NOT NULL -- amount of money
+	days : int unsigned -- loan days
+	preloanFee : decimal(19,4) NOT NULL -- poundage
+	installments : int unsigned NOT NULL -- by stages times
+	interestRate : decimal(22,7) NOT NULL -- interest rate
+	overdueInterestRate : decimal(22,7) NOT NULL -- overdue interest rate
+	minCredit : int unsigned -- min credit lines
+}
+
+note as N2
+open-market product: <b>minCredit=0</b>
+white-list product: <b>minCredit=1</b>
+salary-deduction product: <b>minCredit=2</b>
+end note
+N2 . Products
+
+class Accounts #cyan {
+	Investor & Borrower Accounts
+	==
+	#id
+	id_Person : bigint unsigned
+	id_Certificate : bigint unsigned
+	--
+	+name : varchar(128)
+	+mobile : varchar(128)
+	passWordWrongNumber : int -- times of wrong password
+	lockedAt : datetime -- account locked time
+	credit : int unsigned -- credit lines
+	openId : varchar(128) -- single token oauth returned
+	..
+	isLocked : boolean
+}
+
+package Profiles {
+
+	note as N1
+	open-market account: <b>credit=0</b>
+	white-list account: <b>credit=1</b>
+	salary-deduction account: <b>credit=2</b>
+	end note
+	N1 . Accounts
+
+	class Persons {
+		Person Profiles
+		==
+		#id
+		--
+		firstName : varchar(128)
+		middleName : varchar(128)
+		lastName : varchar(128)
+		nationality : varchar(128)
+		gender : varchar(128)
+		birthday : date
+		maritalStatus : varchar(128)
+		mobile : varchar(128)
+		email : varchar(128)
+		education : varchar(128)
+		faceRecognitionId : int -- id of face recognition
+		faceRecognitionUrl : varchar(128) -- image of face recognition
+		handheldCardId : int
+		handheldCardType : varchar(128)
+		handheldCardUrl : varchar(128) -- image of hand hold card
+		familyBillImgId : int
+		familyBillImgUrl : varchar(128)
+		residentialAddress : varchar(128)
+		permanentAddress : varchar(128)
+		placeOfBirth : varchar(128)
+		property : varchar(128)
+		yearlyFamilyIncome : varchar(128)
+		loanHistory : varchar(128)
+		delinquency : varchar(500)
+	}
+
+	class Cards {
+		Bank card information
+		==
+		#id
+		id_Account : bigint unsigned
+		--
+		account : varchar(128)
+		name : varchar(128)
+	}
+	
+	class Relatives {
+		Account Relatives
+		==
+		#id
+		id_Account : bigint unsigned
+		--
+		firstName : varchar(128)
+		middleName : varchar(128)
+		lastName : varchar(128)
+		gender : varchar(128)
+		mobile : varchar(128)
+		relativeType : int
+		relationship : varchar(128)
+		birthday : date
+		email : varchar(128)
+		address : varchar(128)
+		company : varchar(128)
+	}
+	
+	class Works {
+		Work Job information
+		==
+		#id
+		id_Account : bigint unsigned
+		--
+		employeeId : varchar(128)
+		workCardImgId : int
+		workCardImgUrl : varchar(128)
+		name : varchar(128)
+		address : varchar(128)
+		email : varchar(128)
+		phoneNumber : varchar(128)
+		occupation : varchar(128)
+		entryDate : date
+		firstPayDay : varchar(128)
+		secondPayDay : varchar(128)
+		salary : varchar(128)
+		lastestPayCheck : varchar(128)
+		secondLastestPayCheck : varchar(128)
+	}
+	
+	class Certificates {
+		Certificates
+		==
+		#id
+		--
+	    hasSocialSecurity : boolean
+	    ssId : varchar(128)
+	    ssName : varchar(128)
+	    ssIssueDate : datetime
+	    ssExpireDate : datetime
+	    ssImgUrl : varchar(128)
+		..
+	    hasDriverLicense : boolean
+	    dlId : varchar(128)
+	    dlName : varchar(128)
+	    dlIssueDate : datetime
+	    dlExpireDate : datetime
+	    dlImgUrl : varchar(128)
+		..
+	    hasPassport : boolean
+	    ppId : varchar(128)
+	    ppName : varchar(128)
+	    ppIssueDate : datetime
+	    ppExpireDate : datetime
+	    ppImgUrl : varchar(128)
+		..
+	    hasTaxIdentification : boolean
+	    tiId : varchar(128)
+	    tiName : varchar(128)
+	    tiIssueDate : datetime
+	    tiExpireDate : datetime
+	    tiImgUrl : varchar(128)
+		..
+	    hasUnified : boolean
+	    uId : varchar(128)
+	    uName : varchar(128)
+	    uIssueDate : datetime
+	    uExpireDate : datetime
+	    uImgUrl : varchar(128)
+	}
+
+	class Balances {
+	    balance for borrower
+	    ==
+	    #id
+        +id_Borrower : bigint unsigned
+        id_Loan : bigint unsigned
+        id_Repayment : bigint unsigned
+		--
+        repaidAt : datetime
+		..
+        amount : decimal(16,2) default 0.00
+        balance : decimal(20,6) default 0
+		..
+        status : tinyint(4)
+        summary : varchar(128)
+	}
+}
+
+Accounts --> Persons : belongs to 1 Person
+Accounts --> Certificates: has 1 Certificate
+Accounts --> Balances : has 1 balance
+
+Accounts <-- Relatives: belongs to 1 Account
+Accounts <-- Cards: belongs to 1 Account
+Accounts <-- Works: belongs to 1 Account
+
+
+class Loans #cyan {
+	Loans information
+	==
+	#id
+	id_Borrower : bigint unsigned
+	id_Investor : bigint unsigned
+	id_Product : bigint unsigned
+	--
+	purpose : varchar(128)
+	status : varchar(128)
+	instanceId : bigint unsigned
+	term : varchar(128)
+	loanToken : varchar(128)
+	..
+	principal : decimal(20,6) default 0
+	fee : decimal(20,6) default 0
+	interest : decimal(20,6) default 0
+	overdueInterest : decimal(20,6) default 0
+	amount : decimal(16,2) default 0
+	..
+	repaidPrincipal : decimal(20,6) default 0
+	repaidFee : decimal(20,6) default 0
+	repaidInterest : decimal(20,6) default 0
+	repaidOverdueInterest : decimal(20,6) default 0
+}
+
+class Repayments {
+	Loan Repayments
+	==
+	#id
+	id_Loan : bigint unsigned
+	id_Transaction : bigint unsigned
+	id_Borrower : bigint unsigned
+	--
+	repaidAt : datetime
+	place : varchar(32)
+	..
+	amount : decimal(16,2) default 0
+	fee : decimal(20,6) default 0
+	interest : decimal(20,6) default 0
+	overdueInterest : decimal(20,6) default 0
+	principal : decimal(20,6) default 0
+	..
+	repaidFee : decimal(20,6) default 0
+	repaidInterest : decimal(20,6) default 0
+	repaidOverdueInterest : decimal(20,6) default 0
+	repaidPrincipal : decimal(20,6) default 0
+}
+
+class Investments {
+	Loan Investments
+	==
+	#id
+	id_Loan : bigint unsigned
+	id_Transaction : bigint unsigned
+	--
+	isInvested : boolean
+	investedAt : datetime
+	..
+	amount : decimal(19,4)
+	fee : decimal(19,4)
+	principal : decimal(19,4)
+}
+
+class OverDues {
+	Loan Overdue information
+	==
+	#id
+	id_Loan : bigint unsigned
+	id_Borrower : bigint unsigned
+	--
+	generatedAt : datetime
+	..
+	principal : decimal(20,6) default 0
+	fee : decimal(20,6) default 0
+	overdueInterest : decimal(20,6) default 0
+	interest : decimal(20,6) default 0
+}
+
+class RepayOrders {
+    Repayment order
+    ==
+    #id
+    id_Repayment : bigint unsigned
+    id_Loans : bigint unsigned not null
+    --
+    status : varchar(16)
+}
+
+class InvestOrders {
+    Investment order
+    ==
+    #id
+    id_Investment : bigint unsigned
+    id_Loans : bigint unsigned not null
+    --
+    status : varchar(16)
+}
+
+class Transactions {
+	Payment Transactions
+	==
+	#id
+	id_RepayOrder : bigint unsigned
+	id_InvestOrder : bigint unsigned
+	--
+	code : varchar(128)
+	status : varchar(128)
+	..
+	amount : decimal(19,4)
+}
+
+InvestOrders --> Investments
+InvestOrders --> Loans
+
+RepayOrders --> Repayments
+RepayOrders --> Loans
+
+Transactions --> RepayOrders
+Transactions --> InvestOrders
+
+Repayments --> Loans: belongs to 1 Loan
+Investments --> Loans: belongs to 1 Loan
+OverDues --> Loans: belongs to 1 Loan
+
+
+class ActionTickets {
+	Loan Actions
+	==
+	#id
+	id_Loan : bigint unsigned
+	id_RepayOrder : bigint unsigned
+	id_InvestOrder : bigint unsigned
+	id_Transaction : bigint unsigned
+	--
+	action: varchar(128)
+	name : varchar(128)
+	operator : varchar(128)
+}
+
+Loans --> Products: produced by 1 Product
+Loans ...> Accounts: has 1 Borrower
+Loans ...> Accounts: has 1 Investor
+
+Accounts ..> Products : products are visible to account if\n<b>credit >= minCredit</b>
+
+@enduml
